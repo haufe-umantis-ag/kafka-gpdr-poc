@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import javax.annotation.PostConstruct;
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
 
@@ -28,10 +29,15 @@ public class EmployeeService {
 
 	private List<EmployeeService.Employee> employees = new ArrayList<>();
 
-	public EmployeeService() {
+	@PostConstruct
+	private void init() {
 		for (int i = 0; i < numOfEmployees; i++) {
 			employees.add(new Employee());
+			if (i % 10000 == 0) {
+				System.out.print(i + " ");
+			}
 		}
+		System.out.println();
 	}
 
 	public List<EmployeeService.Employee> getEmployees() {

@@ -22,6 +22,9 @@ public class GdprApplicationTests {
 	@Autowired
 	private EmployeeService employeeService;
 
+	@Autowired
+	private MockMdMService mdm;
+
 	@Test
 	public void contextLoads() {
 	}
@@ -29,6 +32,11 @@ public class GdprApplicationTests {
 	@Test
 	public void employeesCreated() {
 		Assert.assertEquals(numOfEmployees.intValue(), employeeService.getEmployees().size());
+	}
+
+	@Test
+	public void employeesSent() {
+
 	}
 
 }

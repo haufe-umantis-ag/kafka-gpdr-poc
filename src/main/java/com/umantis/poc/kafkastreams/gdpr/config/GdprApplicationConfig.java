@@ -18,6 +18,9 @@ public class GdprApplicationConfig {
 	@Value("${kafka.servers}")
 	private final String bootstrapServers = null;
 
+	@Value("${gdpr.poc.appId}")
+	private final String appId = null;
+
 	@Bean("AES128KeyGen")
 	public KeyGenerator keyGenerator() throws NoSuchAlgorithmException {
 		KeyGenerator keyGen = KeyGenerator.getInstance("AES");
@@ -26,12 +29,13 @@ public class GdprApplicationConfig {
 		return keyGen;
 	}
 
-	private void init() {
+	@Bean("StreamsConfig")
+	public Properties init() {
 		final Properties streamsConfiguration = new Properties();
 		// Give the Streams application a unique name. The name must be unique
 		// in the Kafka cluster
 		// against which the application is run.
-		streamsConfiguration.put(StreamsConfig.APPLICATION_ID_CONFIG, "gdpr-encryption-poc");
+		streamsConfiguration.put(StreamsConfig.APPLICATION_ID_CONFIG, appId);
 		// Where to find Kafka broker(s).
 		streamsConfiguration.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
 		// Specify default (de)serializers for record keys and for record
@@ -44,6 +48,8 @@ public class GdprApplicationConfig {
 		streamsConfiguration.put(StreamsConfig.COMMIT_INTERVAL_MS_CONFIG, 10 * 1000);
 		// For illustrative purposes we disable record caches
 		streamsConfiguration.put(StreamsConfig.CACHE_MAX_BYTES_BUFFERING_CONFIG, 0);
+
+		return streamsConfiguration;
 	}
 
 }
