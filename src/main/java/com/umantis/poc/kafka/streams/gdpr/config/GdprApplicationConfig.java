@@ -1,4 +1,4 @@
-package com.umantis.poc.kafkastreams.gdpr.config;
+package com.umantis.poc.kafka.streams.gdpr.config;
 
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
@@ -6,6 +6,7 @@ import java.util.Properties;
 
 import javax.crypto.KeyGenerator;
 
+import org.apache.commons.lang.RandomStringUtils;
 import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.streams.StreamsConfig;
 import org.springframework.beans.factory.annotation.Value;
@@ -20,6 +21,22 @@ public class GdprApplicationConfig {
 
 	@Value("${gdpr.poc.appId}")
 	private final String appId = null;
+
+	@Value("${kafka.person.topic}")
+	private String personTopic;
+
+	@Value("${kafka.key.topic}")
+	private String keyTopic;
+
+	@Bean("personTopicUsed")
+	public String personTopicUsed() {
+		return personTopic + "." + RandomStringUtils.randomAlphabetic(8);
+	}
+
+	@Bean("keyTopicUsed")
+	public String keyTopicUsed() {
+		return keyTopic + "." + RandomStringUtils.randomAlphabetic(8);
+	}
 
 	@Bean("AES128KeyGen")
 	public KeyGenerator keyGenerator() throws NoSuchAlgorithmException {
@@ -45,7 +62,7 @@ public class GdprApplicationConfig {
 		// Records should be flushed every 10 seconds. This is less than the
 		// default
 		// in order to keep this example interactive.
-		streamsConfiguration.put(StreamsConfig.COMMIT_INTERVAL_MS_CONFIG, 10 * 1000);
+		streamsConfiguration.put(StreamsConfig.COMMIT_INTERVAL_MS_CONFIG, 1 * 1000);
 		// For illustrative purposes we disable record caches
 		streamsConfiguration.put(StreamsConfig.CACHE_MAX_BYTES_BUFFERING_CONFIG, 0);
 

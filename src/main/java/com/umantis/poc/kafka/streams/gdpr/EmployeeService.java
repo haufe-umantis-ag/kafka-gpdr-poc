@@ -1,4 +1,4 @@
-package com.umantis.poc.kafkastreams.gdpr;
+package com.umantis.poc.kafka.streams.gdpr;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -9,6 +9,8 @@ import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
 
 import org.apache.commons.lang.RandomStringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -17,8 +19,13 @@ import org.springframework.stereotype.Service;
 @Service
 public class EmployeeService {
 
+	private static final Logger LOGGER = LoggerFactory.getLogger(EmployeeService.class);
+
 	@Value("${gdpr.poc.numOfEmployees}")
 	private Integer numOfEmployees;
+
+	@Value("${gdpr.poc.employeeDataSize}")
+	private Integer employeeDataSize;
 
 	@Value("${gdpr.poc.withEncryption}")
 	private Boolean withEncryption;
@@ -38,6 +45,7 @@ public class EmployeeService {
 			}
 		}
 		System.out.println();
+		LOGGER.info("Employee list size {}", this.employees.size());
 	}
 
 	public List<EmployeeService.Employee> getEmployees() {
@@ -51,7 +59,7 @@ public class EmployeeService {
 
 		public Employee() {
 			id = UUID.randomUUID().toString();
-			secretInfo = RandomStringUtils.randomAlphanumeric(512);
+			secretInfo = RandomStringUtils.randomAlphanumeric(employeeDataSize);
 			if (EmployeeService.this.withEncryption) {
 				secretKey = EmployeeService.this.keyGen.generateKey();
 			}
@@ -95,7 +103,6 @@ public class EmployeeService {
 			return EmployeeService.this;
 		}
 		
-
 	}
 
 }

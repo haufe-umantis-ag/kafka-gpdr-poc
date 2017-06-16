@@ -1,4 +1,4 @@
-package com.umantis.poc.kafkastreams.gdpr;
+package com.umantis.poc.kafka.streams.gdpr;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
