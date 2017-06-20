@@ -85,26 +85,27 @@ public class GdprApplicationTests {
 
 	@Test
 	public void employees() throws NoSuchAlgorithmException, NoSuchPaddingException, InterruptedException {
-		Assert.assertEquals(numOfEmployees.intValue(), employeeService.getEmployees().size());
-		List<Future<RecordMetadata>> employeesSent = mdm.sendEmployees();
-		// Thread.sleep(Math.min(10000, numOfEmployees / 10000 * 1000));
-		Assert.assertTrue(employeesSent.parallelStream().allMatch(f -> f.isDone() && !f.isCancelled()));
-		LOGGER.info("All employee data sent without cancellation");
-
-		Instant startReceive = Instant.now();
 		if (withEncryption) {
 			proc.receiveWithEncryption();
 		} else {
 			proc.receiveWithoutEncryption();
 		}
 		LOGGER.info("Receive started");
+
+		Assert.assertEquals(numOfEmployees.intValue(), employeeService.getEmployees().size());
+		List<Future<RecordMetadata>> employeesSent = mdm.sendEmployees();
+		Assert.assertTrue(employeesSent.parallelStream().allMatch(f -> f.isDone() && !f.isCancelled()));
+		LOGGER.info("All employee data sent without cancellation");
+
 		do {
-			Thread.sleep(5000);
-			Instant now = Instant.now();
-			Duration sp = Duration.between(startReceive, now);
+			Thread.sleep(100);
 			long processed = proc.getEmployeesProcessed();
-			LOGGER.info("Progress {}/{} employees in {} ms, {} employees/sec", processed, numOfEmployees, sp.toMillis(),
-					(double) processed / (double) sp.getSeconds());
+			Duration spent = proc.spent();
+			if (spent.equals(Duration.ZERO)) {
+				LOGGER.info("Progress {}/{}, -- employees/sec", processed, numOfEmployees);
+			} else {
+				LOGGER.info("Progress {}/{}, {} employees/sec", processed, numOfEmployees, String.format("%.2f", (double)processed/(double)spent.getSeconds()));
+			}
 		} while (!proc.areWeThereYet());
 
 		Assert.assertEquals(numOfEmployees.intValue(), proc.getPersonsStore().approximateNumEntries());

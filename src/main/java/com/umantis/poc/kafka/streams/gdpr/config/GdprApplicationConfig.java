@@ -6,7 +6,7 @@ import java.util.Properties;
 
 import javax.crypto.KeyGenerator;
 
-import org.apache.commons.lang.RandomStringUtils;
+import org.apache.commons.text.RandomStringGenerator;
 import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.streams.StreamsConfig;
 import org.springframework.beans.factory.annotation.Value;
@@ -28,14 +28,16 @@ public class GdprApplicationConfig {
 	@Value("${kafka.key.topic}")
 	private String keyTopic;
 
+	private RandomStringGenerator gen = new RandomStringGenerator.Builder().withinRange('a', 'z').build();
+
 	@Bean("personTopicUsed")
 	public String personTopicUsed() {
-		return personTopic + "." + RandomStringUtils.randomAlphabetic(8);
+		return personTopic + "." + gen.generate(8);
 	}
 
 	@Bean("keyTopicUsed")
 	public String keyTopicUsed() {
-		return keyTopic + "." + RandomStringUtils.randomAlphabetic(8);
+		return keyTopic + "." + gen.generate(8);
 	}
 
 	@Bean("AES128KeyGen")

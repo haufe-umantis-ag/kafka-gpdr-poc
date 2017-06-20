@@ -45,10 +45,6 @@ public class MockMdMService {
 	private String kafkaServers;
 
 	@Autowired
-	@Qualifier("keyTopicUsed")
-	private String keyTopic;
-
-	@Autowired
 	@Qualifier("personTopicUsed")
 	private String personTopic;
 
@@ -68,12 +64,11 @@ public class MockMdMService {
 			Cipher cipher = Cipher.getInstance("AES");
 			Instant start = Instant.now();
 			employeeService.getEmployees().stream().forEach(e -> {
-				String encodedKey = Base64.getEncoder().encodeToString(e.getSecretKey().getEncoded());
-				producer.send(new ProducerRecord<String, String>(keyTopic, e.getId(), encodedKey));
 				try {
+					String encodedKey = Base64.getEncoder().encodeToString(e.getSecretKey().getEncoded());
 					cipher.init(Cipher.ENCRYPT_MODE, e.getSecretKey());
 					String encodedString = Base64.getEncoder().encodeToString(cipher.doFinal(e.getSecretInfo().getBytes("UTF-8")));
-					producer.send(new ProducerRecord<String, String>(personTopic, e.getId(), encodedString));
+					producer.send(new ProducerRecord<String, String>(personTopic, e.getId(), encodedKey + "~" + encodedString));
 				} catch (IllegalBlockSizeException | BadPaddingException | UnsupportedEncodingException
 						| InvalidKeyException e1) {
 					e1.printStackTrace();

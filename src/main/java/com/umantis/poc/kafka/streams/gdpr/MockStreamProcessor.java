@@ -68,7 +68,7 @@ public class MockStreamProcessor {
 	@Value("${gdpr.poc.numOfEmployees}")
 	private long numOfEmployees;
 
-	private Instant start, end;
+	private Instant start, between;
 
 	@PostConstruct
 	public void init() throws NoSuchAlgorithmException, NoSuchPaddingException {
@@ -113,9 +113,11 @@ public class MockStreamProcessor {
 			public void process(String key, String value) {
 				personStore.put(key, value);
 				employeesProcessed++;
-				if(areWeThereYet()) {
-					end = Instant.now();
+				if (employeesProcessed == 1) {
+					start = Instant.now();
+					LOGGER.info("Processing started");
 				}
+				between = Instant.now();
 			}
 
 			@Override
@@ -134,7 +136,6 @@ public class MockStreamProcessor {
 		final KafkaStreams streams = new KafkaStreams(builder, streamsConfig);
 		streams.cleanUp();
 		streams.start();
-		start = Instant.now();
 
 		// Add shutdown hook to respond to SIGTERM and gracefully close Kafka
 		// Streams
@@ -144,11 +145,9 @@ public class MockStreamProcessor {
 
 	public void receiveWithEncryption() {
 
-		final KStream<String, String> keyStream = builder.stream(Serdes.String(), Serdes.String(), keyTopic);
 		final KStream<String, String> personStream = builder.stream(Serdes.String(), Serdes.String(), personTopic);
 
-		personStream.join(keyStream, (secretInfo, cypher) -> cypher + "~" + secretInfo, JoinWindows.of(100000))
-				.process(() -> new Processor<String, String>() {
+		personStream.process(() -> new Processor<String, String>() {
 
 					@Override
 					public void init(ProcessorContext context) {
@@ -181,9 +180,11 @@ public class MockStreamProcessor {
 							e.printStackTrace();
 						}
 						employeesProcessed++;
-						if (areWeThereYet()) {
-							end = Instant.now();
+						if (employeesProcessed == 1) {
+							start = Instant.now();
+							LOGGER.info("Processing started");
 						}
+						between = Instant.now();
 					}
 
 					@Override
@@ -202,7 +203,7 @@ public class MockStreamProcessor {
 		final KafkaStreams streams = new KafkaStreams(builder, streamsConfig);
 		streams.cleanUp();
 		streams.start();
-		start = Instant.now();
+		
 
 		// Add shutdown hook to respond to SIGTERM and gracefully close Kafka
 		// Streams
@@ -227,7 +228,12 @@ public class MockStreamProcessor {
 	}
 
 	public Duration spent() {
-		return Duration.between(start, end);
+		if (start == null) {
+			return Duration.ZERO;
+		} else {
+			return Duration.between(start, between);
+		}
+		
 	}
 
 }

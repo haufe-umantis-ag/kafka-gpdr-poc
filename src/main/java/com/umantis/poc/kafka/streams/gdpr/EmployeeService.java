@@ -8,7 +8,7 @@ import javax.annotation.PostConstruct;
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
 
-import org.apache.commons.lang.RandomStringUtils;
+import org.apache.commons.text.RandomStringGenerator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,6 +35,7 @@ public class EmployeeService {
 	private KeyGenerator keyGen;
 
 	private List<EmployeeService.Employee> employees = new ArrayList<>();
+	RandomStringGenerator gen = new RandomStringGenerator.Builder().build();
 
 	@PostConstruct
 	private void init() {
@@ -42,6 +43,7 @@ public class EmployeeService {
 			employees.add(new Employee());
 			if (i % 10000 == 0) {
 				System.out.print(i + " ");
+				System.out.flush();
 			}
 		}
 		System.out.println();
@@ -59,10 +61,11 @@ public class EmployeeService {
 
 		public Employee() {
 			id = UUID.randomUUID().toString();
-			secretInfo = RandomStringUtils.randomAlphanumeric(employeeDataSize);
+			secretInfo = gen.generate(employeeDataSize);
 			if (EmployeeService.this.withEncryption) {
 				secretKey = EmployeeService.this.keyGen.generateKey();
 			}
+
 		}
 
 		public String getId() {
